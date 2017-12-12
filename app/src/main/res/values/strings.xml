@@ -1,3 +1,55 @@
 <resources>
-    <string name="app_name">CurrencyRate</string>
+    <string name="app_name">Конвертер Валют</string>
+    <string name="currencies">Валюты</string>
+    <string name="currency_exchange">Обмен валют</string>
+    <string name="story">История</string>
+    <string name="plot">График</string>
+    <string name="exchange_button">Обменять</string>
+    <string name="filter">Фильтр</string>
+    <string name="all_time">все</string>
+    <string name="month">месяц</string>
+    <string name="week">неделя</string>
+    <string name="other">другое</string>
+    <string name="confirm">Подтвердить</string>
+    <string name="two_weeks">две недели</string>
+    <string name="date_picker_title">Выберите дату</string>
+    <string name="dialog_title">Актуальный курс</string>
+    <string name="ok">ОК</string>
+    <string name="cancel">Отмена</string>
+    <string name="all_currencies_in_the_world">Все что есть</string>
+    <string-array name="currency_list">
+        <item>AUD</item>
+        <item>GBP</item>
+        <item>KRW</item>
+        <item>SEK</item>
+        <item>BGN</item>
+        <item>HKD</item>
+        <item>MXN</item>
+        <item>SGD</item>
+        <item>BRL</item>
+        <item>HRK</item>
+        <item>MYR</item>
+        <item>THB</item>
+        <item>CAD</item>
+        <item>HUF</item>
+        <item>NOK</item>
+        <item>TRY</item>
+        <item>CHF</item>
+        <item>IDR</item>
+        <item>NZD</item>
+        <item>USD</item>
+        <item>CNY</item>
+        <item>ILS</item>
+        <item>PHP</item>
+        <item>ZAR</item>
+        <item>CZK</item>
+        <item>INR</item>
+        <item>PLN</item>
+        <item>EUR</item>
+        <item>DKK</item>
+        <item>JPY</item>
+        <item>RON</item>
+        <item>RUB</item>
+    </string-array>
+
 </resources>
