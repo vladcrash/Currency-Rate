@@ -99,6 +99,17 @@ public class CurrencyAdapter extends RecyclerView.Adapter<CurrencyAdapter.Curren
         mCurrencies.add(currency);
     }
 
+    public int getItemPositionByName(String name) {
+        int position = -1;
+        for (int i = 0; i < mCurrencies.size(); i++) {
+            if (mCurrencies.get(i).getName().equals(name)) {
+                position = i;
+            }
+        }
+
+        return position;
+    }
+
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
     }

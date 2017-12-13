@@ -27,20 +27,21 @@ import ru.tinkoff.school.currencyrate.models.Currency;
 
 
 public class CurrencyListFragment extends Fragment {
+    public static final String TAG = "CurrencyListFragment";
     private static final int EXCHANGE_REQUEST_CODE = 0;
 
     private RecyclerView mCurrencyRecyclerView;
     private CurrencyAdapter mAdapter;
     private CurrencyDao mCurrencyDao;
     private String mUpperCurrency;
-    private List<Integer> mPositions;
+    private List<String> mCurrencyNamesForUpdate;
     private Currency mTempRemovedCurrency;
 
     @Override
     public void onResume() {
         super.onResume();
-        if (mPositions != null) {
-            mPositions.clear();
+        if (mCurrencyNamesForUpdate != null) {
+            mCurrencyNamesForUpdate.clear();
         }
     }
 
@@ -52,7 +53,7 @@ public class CurrencyListFragment extends Fragment {
         mAdapter = new CurrencyAdapter(getActivity());
         setListeners();
         mCurrencyDao = App.getDatabase().currencyDao();
-        mPositions = new ArrayList<>();
+        mCurrencyNamesForUpdate = new ArrayList<>();
         new GettingListTask(mAdapter, getActivity().getApplicationContext()).execute();
     }
 
@@ -79,14 +80,35 @@ public class CurrencyListFragment extends Fragment {
         mAdapter.setOnItemClickListener(new CurrencyAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(CurrencyAdapter.CurrencyViewHolder holder, int position) {
-                if (!mPositions.isEmpty()) {
-                    mPositions.add(mPositions.get(0) <= position ? position + 1 : position);
+                Currency supposeFavouriteCurrency = mAdapter.getItem(0);
+                Currency currentCurrency = holder.getCurrency();
+                String favourite = null;
+
+                if (mCurrencyNamesForUpdate.isEmpty()) {
+                    mCurrencyNamesForUpdate.add(currentCurrency.getName());
+                    if (supposeFavouriteCurrency.isFavourite()) {
+                        favourite = supposeFavouriteCurrency.getName();
+                        if (favourite.equals(currentCurrency.getName())) {
+                            if (favourite.equals(ExchangeActivity.USD)) {
+                                mCurrencyNamesForUpdate.add(ExchangeActivity.RUB);
+                            } else {
+                                mCurrencyNamesForUpdate.add(ExchangeActivity.USD);
+                            }
+                        } else {
+                            mCurrencyNamesForUpdate.add(favourite);
+                        }
+                    } else {
+                        if (!currentCurrency.getName().equals(ExchangeActivity.USD)) {
+                            mCurrencyNamesForUpdate.add(ExchangeActivity.USD);
+                        } else {
+                            mCurrencyNamesForUpdate.add(ExchangeActivity.RUB);
+                        }
+                    }
                 } else {
-                    mPositions.add(position);
+                    mCurrencyNamesForUpdate.add(currentCurrency.getName());
                 }
 
-                Currency item = mAdapter.getItem(0);
-                String favourite = item.isFavourite() ? item.getName() : null;
+
                 ExchangeActivity.startForResult(CurrencyListFragment.this, mUpperCurrency, holder.getCurrency().getName(), favourite, EXCHANGE_REQUEST_CODE);
                 mUpperCurrency = null;
             }
@@ -99,10 +121,10 @@ public class CurrencyListFragment extends Fragment {
                     return false;
                 }
 
-                mPositions.add(position);
                 mTempRemovedCurrency = holder.getCurrency();
+                mCurrencyNamesForUpdate.add(mTempRemovedCurrency.getName());
+                mUpperCurrency = mTempRemovedCurrency.getName();
                 mAdapter.remove(mTempRemovedCurrency);
-                mUpperCurrency = holder.getCurrency().getName();
 
                 return true;
             }
@@ -131,19 +153,20 @@ public class CurrencyListFragment extends Fragment {
         }.execute(currency);
     }
 
-    
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == EXCHANGE_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                for (Integer position : mPositions) {
+                for (String name : mCurrencyNamesForUpdate) {
+                    int position = mAdapter.getItemPositionByName(name);
                     Currency currency = mAdapter.getItem(position);
                     currency.setRecent(new Date());
                     mAdapter.recalculatePosition(position);
                     updateItem(currency);
                 }
             }
-            mPositions.clear();
+            mCurrencyNamesForUpdate.clear();
         }
     }
 

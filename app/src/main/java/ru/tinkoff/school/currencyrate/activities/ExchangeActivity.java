@@ -34,14 +34,14 @@ import ru.tinkoff.school.currencyrate.models.ApiResponse;
 
 
 public class ExchangeActivity extends AppCompatActivity {
+    public static final String USD = "USD";
+    public static final String RUB = "RUB";
     private static final int FIVE_MINUTES = 5 * 60 * 1000;
     private static final String CURRENCY_CACHE_FILE = "currency_cache.txt";
     private static final String TEMP_FILE = "temp_file.txt";
     private static final String UPPER_CURRENCY = "UPPER_CURRENCY";
     private static final String LOWER_CURRENCY = "LOWER_CURRENCY";
     private static final String FAVOURITE_CURRENCY = "FAVOURITE_CURRENCY";
-    private static final String USD = "USD";
-    private static final String RUB = "RUB";
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     private EditText mUpperValueEditText;
