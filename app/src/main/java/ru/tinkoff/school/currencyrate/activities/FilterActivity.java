@@ -276,6 +276,8 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
             case R.id.confirm:
                 if (mBeginDateOther >= mEndDateOther) {
                     mBeginDateOther = swap(mEndDateOther, mEndDateOther = mBeginDateOther);
+                    mBeginDateOther = getBeginTimeOfTheDay(new Date(mBeginDateOther));
+                    mEndDateOther = getEndTimeOfTheDay(new Date(mEndDateOther));
                 }
 
                 if (mBeginDate >= mEndDate) {

@@ -19,15 +19,13 @@ import ru.tinkoff.school.currencyrate.models.Currency;
 
 public class CurrencyAdapter extends RecyclerView.Adapter<CurrencyAdapter.CurrencyViewHolder> {
 
-    private Context mContext;
     private SortedList<Currency> mCurrencies;
     private boolean mOnBind;
     private OnItemClickListener onItemClickListener;
     private OnItemLongClickListener onItemLongClickListener;
     private OnItemCheckedChangeListener onItemCheckedChangeListener;
 
-    public CurrencyAdapter(Context context) {
-        mContext = context;
+    public CurrencyAdapter() {
         mCurrencies = new SortedList<>(Currency.class,
                 new SortedListAdapterCallback<Currency>(this) {
                     @Override
@@ -62,7 +60,7 @@ public class CurrencyAdapter extends RecyclerView.Adapter<CurrencyAdapter.Curren
 
     @Override
     public CurrencyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(mContext);
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         return new CurrencyViewHolder(inflater, parent);
     }
 

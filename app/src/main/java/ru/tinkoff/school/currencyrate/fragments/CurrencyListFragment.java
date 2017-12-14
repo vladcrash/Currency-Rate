@@ -50,7 +50,7 @@ public class CurrencyListFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         getActivity().setTitle(R.string.currencies);
-        mAdapter = new CurrencyAdapter(getActivity());
+        mAdapter = new CurrencyAdapter();
         setListeners();
         mCurrencyDao = App.getDatabase().currencyDao();
         mCurrencyNamesForUpdate = new ArrayList<>();

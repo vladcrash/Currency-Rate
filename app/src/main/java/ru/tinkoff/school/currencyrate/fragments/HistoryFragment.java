@@ -36,7 +36,7 @@ public class HistoryFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mAdapter = new HistoryAdapter(getActivity());
+        mAdapter = new HistoryAdapter();
         new GettingFilteredCurrencyTask(getActivity(), mAdapter).execute();
     }
 

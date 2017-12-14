@@ -16,11 +16,9 @@ import ru.tinkoff.school.currencyrate.models.ApiResponse;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder> {
 
-    private Context mContext;
     private SortedList<ApiResponse> mCurrencyHistories;
 
-    public HistoryAdapter(Context context) {
-        mContext = context;
+    public HistoryAdapter() {
         mCurrencyHistories = new SortedList<>(ApiResponse.class, new SortedListAdapterCallback<ApiResponse>(this) {
             @Override
             public int compare(ApiResponse o1, ApiResponse o2) {
@@ -41,7 +39,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
 
     @Override
     public HistoryViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(mContext);
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         return new HistoryViewHolder(inflater, parent);
     }
 

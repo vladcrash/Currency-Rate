@@ -68,7 +68,7 @@ public class AnalysisFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         mCurrencyDao = App.getDatabase().currencyDao();
-        mAdapter = new CurrencyAnalysisAdapter(getActivity());
+        mAdapter = new CurrencyAnalysisAdapter();
         new AsyncTask<Void, Void, List<Currency>>() {
             @Override
             protected List<Currency> doInBackground(Void... voids) {
