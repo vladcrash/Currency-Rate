@@ -204,12 +204,12 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
                         mEndDate = 0;
                         break;
                     case R.id.month_button:
-                        mBeginDate = getDate(MONTH);
-                        mEndDate = (new Date()).getTime();
+                        mBeginDate = getBeginTimeOfTheDay(getDate(MONTH));
+                        mEndDate = getEndTimeOfTheDay(new Date());
                         break;
                     case R.id.week_button:
-                        mBeginDate = getDate(WEEK);
-                        mEndDate = (new Date()).getTime();
+                        mBeginDate = getBeginTimeOfTheDay(getDate(WEEK));
+                        mEndDate = getEndTimeOfTheDay(new Date());
                         break;
                     case R.id.other:
                         mBeginDate = mDatePickerStartDate.getTime();
@@ -222,10 +222,30 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
         });
     }
 
-    public long getDate(int days) {
+    private long getBeginTimeOfTheDay(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTimeInMillis();
+    }
+
+    private long getEndTimeOfTheDay(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        return calendar.getTimeInMillis();
+    }
+
+    private Date getDate(int days) {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, days);
-        return calendar.getTimeInMillis();
+        return calendar.getTime();
     }
 
     public void onClick(View view) {
@@ -260,6 +280,8 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
 
                 if (mBeginDate >= mEndDate) {
                     mBeginDate = swap(mEndDate, mEndDate = mBeginDate);
+                    mBeginDate = getBeginTimeOfTheDay(new Date(mBeginDate));
+                    mEndDate = getEndTimeOfTheDay(new Date(mEndDate));
                 }
 
                 SharedPreferences.Editor editor = mPreferences.edit();
@@ -299,8 +321,8 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
             case END_DATE_ID:
                 mEndDateButton.setText(sdf.format(date));
                 mDatePickerEndDate = date;
-                mEndDate = date.getTime();
-                mEndDateOther = date.getTime();
+                mEndDate = getEndTimeOfTheDay(date);
+                mEndDateOther = getEndTimeOfTheDay(date);
                 break;
         }
     }

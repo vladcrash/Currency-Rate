@@ -17,7 +17,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
-            android:inputType="number"/>
+            android:inputType="numberDecimal"/>
 
         <TextView
             android:id="@+id/upper_currency"
@@ -37,7 +37,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
-            android:inputType="number"/>
+            android:inputType="numberDecimal"/>
 
         <TextView
             android:id="@+id/lower_currency"
