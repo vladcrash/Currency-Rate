@@ -1,6 +1,5 @@
 package ru.tinkoff.school.currencyrate.adapters;
 
-import android.content.Context;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.util.SortedListAdapterCallback;
@@ -121,11 +120,11 @@ public class CurrencyAdapter extends RecyclerView.Adapter<CurrencyAdapter.Curren
     }
 
     public interface OnItemClickListener {
-        void onItemClick(CurrencyAdapter.CurrencyViewHolder holder, int position);
+        void onItemClick(CurrencyAdapter.CurrencyViewHolder holder);
     }
 
     public interface OnItemLongClickListener {
-        boolean onItemLongClick(CurrencyAdapter.CurrencyViewHolder holder, int position);
+        boolean onItemLongClick(CurrencyAdapter.CurrencyViewHolder holder);
     }
 
     public interface OnItemCheckedChangeListener {
@@ -158,13 +157,13 @@ public class CurrencyAdapter extends RecyclerView.Adapter<CurrencyAdapter.Curren
 
         @Override
         public void onClick(View view) {
-            onItemClickListener.onItemClick(this, getAdapterPosition());
+            onItemClickListener.onItemClick(this);
 
         }
 
         @Override
         public boolean onLongClick(View view) {
-            return onItemLongClickListener.onItemLongClick(this, getAdapterPosition());
+            return onItemLongClickListener.onItemLongClick(this);
         }
 
         @Override

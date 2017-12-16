@@ -1,7 +1,6 @@
 package ru.tinkoff.school.currencyrate.adapters;
 
 
-import android.content.Context;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.util.SortedListAdapterCallback;

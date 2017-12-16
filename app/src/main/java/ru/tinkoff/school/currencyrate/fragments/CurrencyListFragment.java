@@ -27,7 +27,6 @@ import ru.tinkoff.school.currencyrate.models.Currency;
 
 
 public class CurrencyListFragment extends Fragment {
-    public static final String TAG = "CurrencyListFragment";
     private static final int EXCHANGE_REQUEST_CODE = 0;
 
     private RecyclerView mCurrencyRecyclerView;
@@ -79,7 +78,7 @@ public class CurrencyListFragment extends Fragment {
     private void setListeners() {
         mAdapter.setOnItemClickListener(new CurrencyAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(CurrencyAdapter.CurrencyViewHolder holder, int position) {
+            public void onItemClick(CurrencyAdapter.CurrencyViewHolder holder) {
                 Currency supposeFavouriteCurrency = mAdapter.getItem(0);
                 Currency currentCurrency = holder.getCurrency();
                 String favourite = null;
@@ -116,7 +115,7 @@ public class CurrencyListFragment extends Fragment {
 
         mAdapter.setOnItemLongClickListener(new CurrencyAdapter.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(CurrencyAdapter.CurrencyViewHolder holder, int position) {
+            public boolean onItemLongClick(CurrencyAdapter.CurrencyViewHolder holder) {
                 if (mTempRemovedCurrency != null) {
                     return false;
                 }

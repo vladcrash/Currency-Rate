@@ -40,9 +40,6 @@ import ru.tinkoff.school.currencyrate.models.Currency;
 
 
 public class FilterActivity extends AppCompatActivity implements DatePickerFragment.DatePickerListener {
-    private static final String DIALOG_DATE = "Dialog_Date";
-    private static final int START_DATE_ID = 0;
-    private static final int END_DATE_ID = 1;
     public static final int WEEK = -6;
     public static final int MONTH = -29;
     public static final String CURRENCY_DATA = "currency_data";
@@ -53,6 +50,9 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
     public static final String END_DATE_OTHER = "end_date_other";
     public static final String BEGIN_DATE = "begin_date";
     public static final String END_DATE = "end_date";
+    private static final String DIALOG_DATE = "Dialog_Date";
+    private static final int START_DATE_ID = 0;
+    private static final int END_DATE_ID = 1;
     private SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
 
     private RadioGroup mDateGroup;
@@ -150,27 +150,13 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
                 initRadioGroup();
                 int buttonId = mPreferences.getInt(RADIO_BUTTON_ID, 0);
                 if (buttonId != 0) {
-                    RadioButton button = findViewById(buttonId);
                     retrieveCorrectValues();
-
-                    mDatePickerStartDate = new Date(mBeginDateOther);
-                    mDatePickerEndDate = new Date(mEndDateOther);
-                    mBeginDateButton.setText(sdf.format(mDatePickerStartDate));
-                    mEndDateButton.setText(sdf.format(mDatePickerEndDate));
-
-                    button.setChecked(true);
-                    button.jumpDrawablesToCurrentState();
+                    setTextOnDateButtons(new Date(mBeginDateOther), new Date(mEndDateOther));
+                    setCheckedButton(buttonId);
                 } else {
-                    RadioButton button = findViewById(R.id.all_time_button);
-                    button.setChecked(true);
-                    button.jumpDrawablesToCurrentState();
-
-                    mDatePickerStartDate = new Date();
-                    mDatePickerEndDate = new Date();
-                    mBeginDateButton.setText(sdf.format(mDatePickerStartDate));
-                    mEndDateButton.setText(sdf.format(mDatePickerEndDate));
-                    mBeginDateOther = mDatePickerStartDate.getTime();
-                    mEndDateOther = mDatePickerEndDate.getTime();
+                    setTextOnDateButtons(new Date(), new Date());
+                    setCheckedButton(R.id.all_time_button);
+                    setDateOther(mDatePickerStartDate.getTime(), mDatePickerEndDate.getTime());
                 }
             }
 
@@ -178,12 +164,28 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
                 long startDate = mPreferences.getLong(BEGIN_DATE_OTHER, (new Date()).getTime());
                 long endDate = mPreferences.getLong(END_DATE_OTHER, (new Date()).getTime());
                 if (startDate < endDate) {
-                    mBeginDateOther = startDate;
-                    mEndDateOther = endDate;
+                    setDateOther(startDate, endDate);
                 } else {
-                    mBeginDateOther = endDate;
-                    mEndDateOther = startDate;
+                    setDateOther(endDate, startDate);
                 }
+            }
+
+            private void setTextOnDateButtons(Date start, Date end) {
+                mDatePickerStartDate = start;
+                mDatePickerEndDate = end;
+                mBeginDateButton.setText(sdf.format(mDatePickerStartDate));
+                mEndDateButton.setText(sdf.format(mDatePickerEndDate));
+            }
+
+            private void setDateOther(long start, long end) {
+                mBeginDateOther = start;
+                mEndDateOther = end;
+            }
+
+            private void setCheckedButton(int id) {
+                RadioButton button = findViewById(id);
+                button.setChecked(true);
+                button.jumpDrawablesToCurrentState();
             }
 
         }.execute();

@@ -1,6 +1,5 @@
 package ru.tinkoff.school.currencyrate;
 
-import android.content.Context;
 import android.support.v7.util.SortedList;
 
 import org.junit.After;
@@ -14,7 +13,6 @@ import ru.tinkoff.school.currencyrate.adapters.CurrencyAdapter;
 import ru.tinkoff.school.currencyrate.models.Currency;
 
 import static junit.framework.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,8 +31,7 @@ public class CurrencyAdapterTest {
 
     @Before
     public void setUp() {
-        Context context = mock(Context.class);
-        mCurrencyAdapter = new CurrencyAdapter(context);
+        mCurrencyAdapter = new CurrencyAdapter();
         mCurrencyAdapter.setSortedList(mSortedList);
     }
 
