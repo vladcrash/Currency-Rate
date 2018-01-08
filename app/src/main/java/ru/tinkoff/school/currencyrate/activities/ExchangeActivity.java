@@ -215,6 +215,7 @@ public class ExchangeActivity extends AppCompatActivity {
             } else {
                 if (mIsFirstTime) {
                     mLowerValue = mRate;
+                    mLowerValue = (double) Math.round(mLowerValue * 100.0) / 100.0;
                     mLowerValueEditText.setText(String.format(Locale.ENGLISH, "%.2f", mLowerValue));
                     mIsFirstTime = false;
                     mExchangeButton.setEnabled(true);
