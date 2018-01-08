@@ -3,7 +3,6 @@ package ru.tinkoff.school.currencyrate.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
@@ -16,27 +15,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
-import ru.tinkoff.school.currencyrate.App;
 import ru.tinkoff.school.currencyrate.R;
-import ru.tinkoff.school.currencyrate.adapters.FilterAdapter;
-import ru.tinkoff.school.currencyrate.database.ApiResponseDao;
+import ru.tinkoff.school.currencyrate.asynchronous.GettingFilterTask;
 import ru.tinkoff.school.currencyrate.fragments.DatePickerFragment;
-import ru.tinkoff.school.currencyrate.models.ApiResponse;
-import ru.tinkoff.school.currencyrate.models.Currency;
+import ru.tinkoff.school.currencyrate.models.Filter;
 
 
 public class FilterActivity extends AppCompatActivity implements DatePickerFragment.DatePickerListener {
@@ -55,19 +45,12 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
     private static final int END_DATE_ID = 1;
     private SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
 
+    public Button mBeginDateButton;
+    public Button mEndDateButton;
+    public RecyclerView mFilterRecyclerView;
     private RadioGroup mDateGroup;
-    private Button mBeginDateButton;
-    private Button mEndDateButton;
-    private RecyclerView mFilterRecyclerView;
-    private ApiResponseDao mApiResponseDao;
-    private ArrayList<Currency> mCurrencies;
-    private long mBeginDate;
-    private long mEndDate;
-    private long mBeginDateOther;
-    private long mEndDateOther;
-    private Date mDatePickerStartDate;
-    private Date mDatePickerEndDate;
     private SharedPreferences mPreferences;
+    private Filter mFilter;
 
 
     public static void start(Context context) {
@@ -88,110 +71,12 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
         mEndDateButton = findViewById(R.id.end_date_button);
         mFilterRecyclerView = findViewById(R.id.filter_recycler_view);
         mFilterRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mApiResponseDao = App.getDatabase().apiResponseDao();
-        mCurrencies = new ArrayList<>();
         mPreferences = getSharedPreferences(CURRENCY_DATA, Context.MODE_PRIVATE);
-        init();
-
+        mFilter = new Filter();
+        new GettingFilterTask(this, mFilter).execute();
     }
 
-    private void init() {
-        new AsyncTask<Void, Void, List<Currency>>() {
-            private SharedPreferences.Editor mEditor = mPreferences.edit();
-
-            @Override
-            protected List<Currency> doInBackground(Void... voids) {
-                int historyListSize = mPreferences.getInt(HISTORY_LIST_SIZE, 0);
-                String listPref = mPreferences.getString(CURRENCY_LIST, null);
-                Gson gson = new Gson();
-                List<Currency> currencies = gson.fromJson(listPref, new TypeToken<ArrayList<Currency>>() {
-                }.getType());
-
-                if (currencies == null) {
-                    Set<Currency> currencySet = new HashSet<>();
-                    makeFilterList(currencySet);
-                    mCurrencies.addAll(currencySet);
-                    saveHistoryListSize();
-                } else if (mApiResponseDao.getAll().size() > historyListSize) {
-                    Set<Currency> currencySet = new HashSet<>();
-                    makeFilterList(currencySet);
-                    currencies.addAll(getOnlyNewItems(currencySet, currencies));
-                    mCurrencies.addAll(currencies);
-                    saveHistoryListSize();
-                } else {
-                    mCurrencies.addAll(currencies);
-                }
-                return mCurrencies;
-            }
-
-            private void makeFilterList(Set<Currency> currencySet) {
-                for (ApiResponse apiResponse : mApiResponseDao.getAll()) {
-                    currencySet.add(new Currency(apiResponse.getBase()));
-                    currencySet.add(new Currency(apiResponse.getCurrency().getName()));
-                }
-            }
-
-            private List<Currency> getOnlyNewItems(Set<Currency> currencySet, List<Currency> currencies) {
-                List<Currency> subtraction = new ArrayList<>(currencySet.size());
-                subtraction.addAll(currencySet);
-                subtraction.removeAll(currencies);
-                return subtraction;
-            }
-
-            private void saveHistoryListSize() {
-                mEditor.putInt(HISTORY_LIST_SIZE, mApiResponseDao.getAll().size());
-                mEditor.apply();
-            }
-
-            @Override
-            protected void onPostExecute(List<Currency> list) {
-                mFilterRecyclerView.setAdapter(new FilterAdapter(list));
-
-                initRadioGroup();
-                int buttonId = mPreferences.getInt(RADIO_BUTTON_ID, 0);
-                if (buttonId != 0) {
-                    retrieveCorrectValues();
-                    setTextOnDateButtons(new Date(mBeginDateOther), new Date(mEndDateOther));
-                    setCheckedButton(buttonId);
-                } else {
-                    setTextOnDateButtons(new Date(), new Date());
-                    setCheckedButton(R.id.all_time_button);
-                    setDateOther(mDatePickerStartDate.getTime(), mDatePickerEndDate.getTime());
-                }
-            }
-
-            private void retrieveCorrectValues() {
-                long startDate = mPreferences.getLong(BEGIN_DATE_OTHER, (new Date()).getTime());
-                long endDate = mPreferences.getLong(END_DATE_OTHER, (new Date()).getTime());
-                if (startDate < endDate) {
-                    setDateOther(startDate, endDate);
-                } else {
-                    setDateOther(endDate, startDate);
-                }
-            }
-
-            private void setTextOnDateButtons(Date start, Date end) {
-                mDatePickerStartDate = start;
-                mDatePickerEndDate = end;
-                mBeginDateButton.setText(sdf.format(mDatePickerStartDate));
-                mEndDateButton.setText(sdf.format(mDatePickerEndDate));
-            }
-
-            private void setDateOther(long start, long end) {
-                mBeginDateOther = start;
-                mEndDateOther = end;
-            }
-
-            private void setCheckedButton(int id) {
-                RadioButton button = findViewById(id);
-                button.setChecked(true);
-                button.jumpDrawablesToCurrentState();
-            }
-
-        }.execute();
-    }
-
-    private void initRadioGroup() {
+    public void initRadioGroup() {
         mDateGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, @IdRes int i) {
@@ -202,47 +87,28 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
 
                 switch (i) {
                     case R.id.all_time_button:
-                        mBeginDate = 0;
-                        mEndDate = 0;
+                        mFilter.setBeginDate(0);
+                        mFilter.setEndDate(0);
                         break;
                     case R.id.month_button:
-                        mBeginDate = getBeginTimeOfTheDay(getDate(MONTH));
-                        mEndDate = getEndTimeOfTheDay(new Date());
+                        mFilter.setBeginDate(getDate(MONTH).getTime());
+                        mFilter.setEndDate(new Date().getTime());
                         break;
                     case R.id.week_button:
-                        mBeginDate = getBeginTimeOfTheDay(getDate(WEEK));
-                        mEndDate = getEndTimeOfTheDay(new Date());
+                        mFilter.setBeginDate(getDate(WEEK).getTime());
+                        mFilter.setEndDate(new Date().getTime());
                         break;
                     case R.id.other:
-                        mBeginDate = mDatePickerStartDate.getTime();
-                        mEndDate = mDatePickerEndDate.getTime();
                         mBeginDateButton.setVisibility(View.VISIBLE);
                         mEndDateButton.setVisibility(View.VISIBLE);
+                        mFilter.setBeginDate(mFilter.getDatePickerStartDate().getTime());
+                        mFilter.setEndDate(mFilter.getDatePickerEndDate().getTime());
                         break;
                 }
             }
         });
     }
 
-    private long getBeginTimeOfTheDay(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        return calendar.getTimeInMillis();
-    }
-
-    private long getEndTimeOfTheDay(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
-        calendar.set(Calendar.MILLISECOND, 999);
-        return calendar.getTimeInMillis();
-    }
 
     private Date getDate(int days) {
         Calendar calendar = Calendar.getInstance();
@@ -256,11 +122,11 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
 
         switch (view.getId()) {
             case R.id.begin_date_button:
-                dialog = DatePickerFragment.newInstance(mDatePickerStartDate, START_DATE_ID);
+                dialog = DatePickerFragment.newInstance(mFilter.getDatePickerStartDate(), START_DATE_ID);
                 dialog.show(fm, DIALOG_DATE);
                 break;
             case R.id.end_date_button:
-                dialog = DatePickerFragment.newInstance(mDatePickerEndDate, END_DATE_ID);
+                dialog = DatePickerFragment.newInstance(mFilter.getDatePickerEndDate(), END_DATE_ID);
                 dialog.show(fm, DIALOG_DATE);
                 break;
         }
@@ -276,28 +142,28 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.confirm:
-                if (mBeginDateOther >= mEndDateOther) {
-                    mBeginDateOther = swap(mEndDateOther, mEndDateOther = mBeginDateOther);
-                    mBeginDateOther = getBeginTimeOfTheDay(new Date(mBeginDateOther));
-                    mEndDateOther = getEndTimeOfTheDay(new Date(mEndDateOther));
+                if (mFilter.getBeginDateOther() >= mFilter.getEndDateOther()) {
+                    long temp = mFilter.getBeginDateOther();
+                    mFilter.setBeginDateOther(mFilter.getEndDateOther());
+                    mFilter.setEndDateOther(temp);
                 }
 
-                if (mBeginDate >= mEndDate) {
-                    mBeginDate = swap(mEndDate, mEndDate = mBeginDate);
-                    mBeginDate = getBeginTimeOfTheDay(new Date(mBeginDate));
-                    mEndDate = getEndTimeOfTheDay(new Date(mEndDate));
+                if (mFilter.getBeginDate() >= mFilter.getEndDate()) {
+                    long temp = mFilter.getBeginDate();
+                    mFilter.setBeginDate(mFilter.getEndDate());
+                    mFilter.setEndDate(temp);
                 }
 
                 SharedPreferences.Editor editor = mPreferences.edit();
                 editor.clear();
                 Gson gson = new Gson();
-                String list = gson.toJson(mCurrencies);
+                String list = gson.toJson(mFilter.getCurrencies());
                 editor.putString(CURRENCY_LIST, list);
                 editor.putInt(RADIO_BUTTON_ID, mDateGroup.getCheckedRadioButtonId());
-                editor.putLong(BEGIN_DATE_OTHER, mBeginDateOther);
-                editor.putLong(END_DATE_OTHER, mEndDateOther);
-                editor.putLong(BEGIN_DATE, mBeginDate);
-                editor.putLong(END_DATE, mEndDate);
+                editor.putLong(BEGIN_DATE_OTHER, mFilter.getBeginDateOther());
+                editor.putLong(END_DATE_OTHER, mFilter.getEndDateOther());
+                editor.putLong(BEGIN_DATE, mFilter.getBeginDate());
+                editor.putLong(END_DATE, mFilter.getEndDate());
                 editor.apply();
 
                 finish();
@@ -307,26 +173,21 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
         }
     }
 
-    private long swap(long value, long dummy) {
-        return value;
-    }
-
-
     @Override
     public void setDate(Date date, int trigger) {
 
         switch (trigger) {
             case START_DATE_ID:
                 mBeginDateButton.setText(sdf.format(date));
-                mDatePickerStartDate = date;
-                mBeginDate = date.getTime();
-                mBeginDateOther = date.getTime();
+                mFilter.setDatePickerStartDate(date);
+                mFilter.setBeginDate(date.getTime());
+                mFilter.setBeginDateOther(date.getTime());
                 break;
             case END_DATE_ID:
                 mEndDateButton.setText(sdf.format(date));
-                mDatePickerEndDate = date;
-                mEndDate = getEndTimeOfTheDay(date);
-                mEndDateOther = getEndTimeOfTheDay(date);
+                mFilter.setDatePickerEndDate(date);
+                mFilter.setEndDate(date.getTime());
+                mFilter.setEndDateOther(date.getTime());
                 break;
         }
     }
@@ -336,5 +197,4 @@ public class FilterActivity extends AppCompatActivity implements DatePickerFragm
         finish();
         return true;
     }
-
 }
