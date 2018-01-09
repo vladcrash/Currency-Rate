@@ -15,12 +15,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Date;
 import java.util.Locale;
 
@@ -31,18 +25,17 @@ import ru.tinkoff.school.currencyrate.App;
 import ru.tinkoff.school.currencyrate.R;
 import ru.tinkoff.school.currencyrate.database.ApiResponseDao;
 import ru.tinkoff.school.currencyrate.models.ApiResponse;
+import ru.tinkoff.school.currencyrate.network.CurrencyCache;
+
+import static ru.tinkoff.school.currencyrate.network.CurrencyCache.FIVE_MINUTES;
 
 
 public class ExchangeActivity extends AppCompatActivity {
     public static final String USD = "USD";
     public static final String RUB = "RUB";
-    private static final int FIVE_MINUTES = 5 * 60 * 1000;
-    private static final String CURRENCY_CACHE_FILE = "currency_cache.txt";
-    private static final String TEMP_FILE = "temp_file.txt";
     private static final String UPPER_CURRENCY = "UPPER_CURRENCY";
     private static final String LOWER_CURRENCY = "LOWER_CURRENCY";
     private static final String FAVOURITE_CURRENCY = "FAVOURITE_CURRENCY";
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     private EditText mUpperValueEditText;
     private EditText mLowerValueEditText;
@@ -56,10 +49,10 @@ public class ExchangeActivity extends AppCompatActivity {
     private double mRate;
     private ApiResponseDao mApiResponseDao;
     private Boolean mAbrakadabra;
-    private File mCacheFile;
     private Date mDate;
     private boolean mIsFirstTime;
     private boolean mIsShowDialog;
+    private CurrencyCache mCache;
 
     public static void startForResult(Fragment fragment, String upperCurrency, String lowerCurrency, String favourite,
                                       int requestCode) {
@@ -92,6 +85,7 @@ public class ExchangeActivity extends AppCompatActivity {
         mLowerCurrencyTextView.setText(mLowerCurrency);
 
         mIsFirstTime = true;
+        mCache = new CurrencyCache(this, mUpperCurrency, mLowerCurrency);
         setRate();
         mUpperValue = 1.0;
         mUpperValueEditText.setText(Double.toString(mUpperValue));
@@ -130,7 +124,6 @@ public class ExchangeActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     mRate = response.body().getCurrency().getRate();
                     mDate = new Date();
-
                     if (upOrDown) {
                         updateUpper();
                     } else {
@@ -145,7 +138,7 @@ public class ExchangeActivity extends AppCompatActivity {
                     }
 
                     mIsFirstTime = false;
-                    writeToCache();
+                    mCache.writeToCache(mRate, mDate, mAbrakadabra);
                 }
             }
 
@@ -156,64 +149,15 @@ public class ExchangeActivity extends AppCompatActivity {
         });
     }
 
-    private void writeToCache() {
-        if (mAbrakadabra == null) {
-            try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(mCacheFile, true));
-                String original = mUpperCurrency + mLowerCurrency + " " + mRate + " " + mDate.getTime() + LINE_SEPARATOR;
-                String reverse = mLowerCurrency + mUpperCurrency + " " + 1.0 / mRate + " " + mDate.getTime() + LINE_SEPARATOR;
-                writer.write(original);
-                writer.write(reverse);
-
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            rewriteCache();
-        }
-
-    }
-
-    private void rewriteCache() {
-        File tempFile = new File(getCacheDir(), TEMP_FILE);
-
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(mCacheFile));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile, true));
-
-            String currentLine;
-            while ((currentLine = reader.readLine()) != null) {
-                String[] line = currentLine.split(" ");
-                if (line[0].equals(mUpperCurrency + mLowerCurrency) || line[0].equals(mLowerCurrency + mUpperCurrency)) {
-                    continue;
-                }
-                writer.write(currentLine + LINE_SEPARATOR);
-            }
-
-            String original = mUpperCurrency + mLowerCurrency + " " + mRate + " " + (new Date()).getTime() + LINE_SEPARATOR;
-            String reverse = mLowerCurrency + mUpperCurrency + " " + 1.0 / mRate + " " + (new Date()).getTime() + LINE_SEPARATOR;
-            writer.write(original);
-            writer.write(reverse);
-
-            reader.close();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        mCacheFile.delete();
-        tempFile.renameTo(mCacheFile);
-    }
-
     private void setRate() {
-        mCacheFile = new File(getCacheDir(), CURRENCY_CACHE_FILE);
-        mAbrakadabra = isShouldGoToTheNetwork();
+        mAbrakadabra = mCache.isShouldGoToTheNetwork();
         if (mAbrakadabra != null) {
             if (mAbrakadabra) {
                 requestRate(true);
             } else {
                 if (mIsFirstTime) {
+                    mRate =  mCache.getRate();
+                    mDate = mCache.getDate();
                     mLowerValue = mRate;
                     mLowerValue = (double) Math.round(mLowerValue * 100.0) / 100.0;
                     mLowerValueEditText.setText(String.format(Locale.ENGLISH, "%.2f", mLowerValue));
@@ -224,29 +168,6 @@ public class ExchangeActivity extends AppCompatActivity {
         } else {
             requestRate(true);
         }
-    }
-
-    private Boolean isShouldGoToTheNetwork() {
-
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(mCacheFile));
-
-            String currentLine;
-            while ((currentLine = reader.readLine()) != null) {
-                String[] line = currentLine.split(" ");
-                if (line[0].equals(mUpperCurrency + mLowerCurrency)) {
-                    mRate = Double.parseDouble(line[1]);
-                    mDate = new Date(Long.parseLong(line[2]));
-                    return (new Date()).getTime() - mDate.getTime() > FIVE_MINUTES;
-                }
-            }
-
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
     }
 
     @Override
