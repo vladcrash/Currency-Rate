@@ -3,6 +3,7 @@ package ru.tinkoff.school.currencyrate.asynchronous;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 import ru.tinkoff.school.currencyrate.App;
@@ -16,18 +17,19 @@ public class GettingListTask extends AsyncTask<Void, Void, List<Currency>> {
 
     private CurrencyAdapter mAdapter;
     private CurrencyDao mCurrencyDao = App.getDatabase().currencyDao();
-    private Context mContext;
+    private WeakReference<Context> mContext;
 
     public GettingListTask(CurrencyAdapter adapter, Context context) {
         mAdapter = adapter;
-        mContext = context;
+        mContext = new WeakReference<>(context);
     }
 
     @Override
     protected List<Currency> doInBackground(Void... voids) {
         List<Currency> list = mCurrencyDao.getAll();
-        if (list.isEmpty()) {
-            String[] names = mContext.getResources().getStringArray(R.array.currency_list);
+        Context context = mContext.get();
+        if (list.isEmpty() && context != null) {
+            String[] names = context.getResources().getStringArray(R.array.currency_list);
             for (String name : names) {
                 list.add(new Currency(name));
             }

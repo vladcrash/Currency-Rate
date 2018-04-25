@@ -11,26 +11,26 @@ import android.widget.TextView;
 import java.util.List;
 
 import ru.tinkoff.school.currencyrate.R;
-import ru.tinkoff.school.currencyrate.models.ApiResponse;
+import ru.tinkoff.school.currencyrate.models.ExchangeCurrency;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder> {
 
-    private SortedList<ApiResponse> mCurrencyHistories;
+    private SortedList<ExchangeCurrency> mCurrencyHistories;
 
     public HistoryAdapter() {
-        mCurrencyHistories = new SortedList<>(ApiResponse.class, new SortedListAdapterCallback<ApiResponse>(this) {
+        mCurrencyHistories = new SortedList<>(ExchangeCurrency.class, new SortedListAdapterCallback<ExchangeCurrency>(this) {
             @Override
-            public int compare(ApiResponse o1, ApiResponse o2) {
+            public int compare(ExchangeCurrency o1, ExchangeCurrency o2) {
                 return o1.getCurrency().getRecent().compareTo(o2.getCurrency().getRecent()) * (-1);
             }
 
             @Override
-            public boolean areContentsTheSame(ApiResponse oldItem, ApiResponse newItem) {
+            public boolean areContentsTheSame(ExchangeCurrency oldItem, ExchangeCurrency newItem) {
                 return oldItem.getCurrency().getRecent().equals(newItem.getCurrency().getRecent());
             }
 
             @Override
-            public boolean areItemsTheSame(ApiResponse item1, ApiResponse item2) {
+            public boolean areItemsTheSame(ExchangeCurrency item1, ExchangeCurrency item2) {
                 return item1.getId() == item2.getId();
             }
         });
@@ -44,7 +44,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
 
     @Override
     public void onBindViewHolder(HistoryViewHolder holder, int position) {
-        ApiResponse currencyHistory = mCurrencyHistories.get(position);
+        ExchangeCurrency currencyHistory = mCurrencyHistories.get(position);
         holder.bind(currencyHistory);
     }
 
@@ -53,7 +53,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
         return mCurrencyHistories.size();
     }
 
-    public void setCurrencyHistories(List<ApiResponse> currencyHistories) {
+    public void setCurrencyHistories(List<ExchangeCurrency> currencyHistories) {
         mCurrencyHistories.clear();
         mCurrencyHistories.addAll(currencyHistories);
     }
@@ -67,7 +67,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
             mExchangeInfo = itemView.findViewById(R.id.exchange_info);
         }
 
-        public void bind(ApiResponse currencyHistory) {
+        public void bind(ExchangeCurrency currencyHistory) {
             mExchangeInfo.setText(currencyHistory.toString());
         }
 

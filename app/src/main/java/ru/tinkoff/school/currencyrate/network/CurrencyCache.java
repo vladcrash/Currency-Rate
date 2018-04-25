@@ -83,9 +83,8 @@ public class CurrencyCache {
     private void rewriteCache(double rate) {
         File tempFile = new File(mContext.getCacheDir(), TEMP_FILE);
 
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(mCacheFile));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile, true));
+        try(BufferedReader reader = new BufferedReader(new FileReader(mCacheFile));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile, true))) {
 
             String currentLine;
             while ((currentLine = reader.readLine()) != null) {
@@ -100,9 +99,6 @@ public class CurrencyCache {
             String reverse = mLowerCurrency + mUpperCurrency + " " + 1.0 / rate + " " + (new Date()).getTime() + LINE_SEPARATOR;
             writer.write(original);
             writer.write(reverse);
-
-            reader.close();
-            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

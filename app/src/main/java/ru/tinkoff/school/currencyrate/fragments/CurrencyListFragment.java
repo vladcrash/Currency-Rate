@@ -31,7 +31,7 @@ public class CurrencyListFragment extends Fragment {
 
     private RecyclerView mCurrencyRecyclerView;
     private CurrencyAdapter mAdapter;
-    private CurrencyDao mCurrencyDao;
+    private static CurrencyDao mCurrencyDao;
     private String mUpperCurrency;
     private List<String> mCurrencyNamesForUpdate;
     private Currency mTempRemovedCurrency;
@@ -84,10 +84,10 @@ public class CurrencyListFragment extends Fragment {
                 String favourite = null;
 
                 if (mCurrencyNamesForUpdate.isEmpty()) {
-                    mCurrencyNamesForUpdate.add(currentCurrency.getName());
+                    mCurrencyNamesForUpdate.add(currentCurrency.getTo());
                     if (supposeFavouriteCurrency.isFavourite()) {
-                        favourite = supposeFavouriteCurrency.getName();
-                        if (favourite.equals(currentCurrency.getName())) {
+                        favourite = supposeFavouriteCurrency.getTo();
+                        if (favourite.equals(currentCurrency.getTo())) {
                             if (favourite.equals(ExchangeActivity.USD)) {
                                 mCurrencyNamesForUpdate.add(ExchangeActivity.RUB);
                             } else {
@@ -97,18 +97,18 @@ public class CurrencyListFragment extends Fragment {
                             mCurrencyNamesForUpdate.add(favourite);
                         }
                     } else {
-                        if (!currentCurrency.getName().equals(ExchangeActivity.USD)) {
+                        if (!currentCurrency.getTo().equals(ExchangeActivity.USD)) {
                             mCurrencyNamesForUpdate.add(ExchangeActivity.USD);
                         } else {
                             mCurrencyNamesForUpdate.add(ExchangeActivity.RUB);
                         }
                     }
                 } else {
-                    mCurrencyNamesForUpdate.add(currentCurrency.getName());
+                    mCurrencyNamesForUpdate.add(currentCurrency.getTo());
                 }
 
 
-                ExchangeActivity.startForResult(CurrencyListFragment.this, mUpperCurrency, holder.getCurrency().getName(), favourite, EXCHANGE_REQUEST_CODE);
+                ExchangeActivity.startForResult(CurrencyListFragment.this, mUpperCurrency, holder.getCurrency().getTo(), favourite, EXCHANGE_REQUEST_CODE);
                 mUpperCurrency = null;
             }
         });
@@ -121,8 +121,8 @@ public class CurrencyListFragment extends Fragment {
                 }
 
                 mTempRemovedCurrency = holder.getCurrency();
-                mCurrencyNamesForUpdate.add(mTempRemovedCurrency.getName());
-                mUpperCurrency = mTempRemovedCurrency.getName();
+                mCurrencyNamesForUpdate.add(mTempRemovedCurrency.getTo());
+                mUpperCurrency = mTempRemovedCurrency.getTo();
                 mAdapter.remove(mTempRemovedCurrency);
 
                 return true;
@@ -143,13 +143,31 @@ public class CurrencyListFragment extends Fragment {
 
 
     private void updateItem(Currency currency) {
-        new AsyncTask<Currency, Void, Void>() {
-            @Override
-            protected Void doInBackground(Currency... currencies) {
-                mCurrencyDao.update(currencies[0]);
-                return null;
-            }
-        }.execute(currency);
+//        new AsyncTask<Currency, Void, Void>() {
+//            @Override
+//            protected Void doInBackground(Currency... currencies) {
+//                mCurrencyDao.update(currencies[0]);
+//                return null;
+//            }
+//        }.execute(currency);
+
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                mCurrencyDao.update(currency);
+//            }
+//        }).start();
+
+        new UpdateTask().execute(currency);
+    }
+
+    private static class UpdateTask extends AsyncTask<Currency, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Currency... currencies) {
+            mCurrencyDao.update(currencies[0]);
+            return null;
+        }
     }
 
 

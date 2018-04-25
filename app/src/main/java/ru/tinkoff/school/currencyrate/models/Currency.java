@@ -19,7 +19,7 @@ import ru.tinkoff.school.currencyrate.database.DateTypeConverter;
 public class Currency {
     @PrimaryKey(autoGenerate = true)
     private long mId;
-    private String name;
+    private String mTo;
     private double rate;
     private double mValue;
 
@@ -33,13 +33,13 @@ public class Currency {
     public Currency() {
     }
 
-    public Currency(String name) {
-        this(name, 0.0);
+    public Currency(String to) {
+        this(to, 0.0);
     }
 
     @Ignore
-    public Currency(String name, double rate) {
-        this.name = name;
+    public Currency(String to, double rate) {
+        this.mTo = to;
         this.rate = rate;
         recent = new Date();
     }
@@ -47,7 +47,7 @@ public class Currency {
     @Ignore
     public Currency(double value, String name) {
         this.mValue = value;
-        this.name = name;
+        this.mTo = name;
         recent = new Date();
     }
 
@@ -68,12 +68,12 @@ public class Currency {
         this.recent = recent;
     }
 
-    public String getName() {
-        return name;
+    public String getTo() {
+        return mTo;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTo(String to) {
+        this.mTo = to;
     }
 
     public double getRate() {
@@ -110,14 +110,14 @@ public class Currency {
 
         Currency response = (Currency) obj;
         return new EqualsBuilder()
-                .append(name, response.name)
+                .append(mTo, response.mTo)
                 .isEquals();
     }
 
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
-                .append(name)
+                .append(mTo)
                 .toHashCode();
     }
 

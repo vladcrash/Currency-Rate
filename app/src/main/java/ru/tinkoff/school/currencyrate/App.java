@@ -8,17 +8,17 @@ import com.google.gson.GsonBuilder;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import ru.tinkoff.school.currencyrate.database.MyDatabase;
+import ru.tinkoff.school.currencyrate.database.CurrencyDatabase;
 import ru.tinkoff.school.currencyrate.models.Currency;
 import ru.tinkoff.school.currencyrate.network.CurrencyDeserializer;
 import ru.tinkoff.school.currencyrate.network.FixerApi;
 
 
 public class App extends Application {
-    private static final String DATABASE_NAME = "MyDatabase";
+    private static final String DATABASE_NAME = "CurrencyDatabase";
 
     private static FixerApi sFixerApi;
-    private static MyDatabase sDatabase;
+    private static CurrencyDatabase sDatabase;
     private Retrofit mRetrofit;
 
     @Override
@@ -35,7 +35,7 @@ public class App extends Application {
                 .build();
         sFixerApi = mRetrofit.create(FixerApi.class);
 
-        sDatabase = Room.databaseBuilder(getApplicationContext(), MyDatabase.class, DATABASE_NAME)
+        sDatabase = Room.databaseBuilder(getApplicationContext(), CurrencyDatabase.class, DATABASE_NAME)
                 .build();
     }
 
@@ -43,7 +43,7 @@ public class App extends Application {
         return sFixerApi;
     }
 
-    public static MyDatabase getDatabase() {
+    public static CurrencyDatabase getDatabase() {
         return sDatabase;
     }
 }

@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -23,8 +24,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import ru.tinkoff.school.currencyrate.App;
 import ru.tinkoff.school.currencyrate.R;
-import ru.tinkoff.school.currencyrate.database.ApiResponseDao;
-import ru.tinkoff.school.currencyrate.models.ApiResponse;
+import ru.tinkoff.school.currencyrate.database.ExchangeCurrencyDao;
+import ru.tinkoff.school.currencyrate.models.ExchangeCurrency;
 import ru.tinkoff.school.currencyrate.network.CurrencyCache;
 
 import static ru.tinkoff.school.currencyrate.network.CurrencyCache.FIVE_MINUTES;
@@ -47,8 +48,8 @@ public class ExchangeActivity extends AppCompatActivity {
     private double mUpperValue;
     private double mLowerValue;
     private double mRate;
-    private ApiResponseDao mApiResponseDao;
-    private Boolean mAbrakadabra;
+    private ExchangeCurrencyDao mExchangeCurrencyDao;
+    private Boolean mIsRequest;
     private Date mDate;
     private boolean mIsFirstTime;
     private boolean mIsShowDialog;
@@ -69,7 +70,10 @@ public class ExchangeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_exchange);
 
         setTitle(R.string.currency_exchange);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         mUpperValueEditText = findViewById(R.id.upper_currency_input);
         mLowerValueEditText = findViewById(R.id.lower_currency_input);
@@ -77,7 +81,7 @@ public class ExchangeActivity extends AppCompatActivity {
         mLowerCurrencyTextView = findViewById(R.id.lower_currency);
         mExchangeButton = findViewById(R.id.exchange_button);
         mExchangeButton.setEnabled(false);
-        mApiResponseDao = App.getDatabase().apiResponseDao();
+        mExchangeCurrencyDao = App.getDatabase().exchangeCurrencyDao();
         initEditTexts();
         setCurrencyOrder();
 
@@ -117,10 +121,10 @@ public class ExchangeActivity extends AppCompatActivity {
     }
 
     private void requestRate(final boolean upOrDown) {
-        Call<ApiResponse> call = App.getFixerApi().getCurrencyRate(mUpperCurrency, mLowerCurrency);
-        call.enqueue(new Callback<ApiResponse>() {
+        Call<ExchangeCurrency> call = App.getFixerApi().getCurrencyRate(mUpperCurrency, mLowerCurrency, null);
+        call.enqueue(new Callback<ExchangeCurrency>() {
             @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+            public void onResponse(Call<ExchangeCurrency> call, Response<ExchangeCurrency> response) {
                 if (response.isSuccessful()) {
                     mRate = response.body().getCurrency().getRate();
                     mDate = new Date();
@@ -138,21 +142,21 @@ public class ExchangeActivity extends AppCompatActivity {
                     }
 
                     mIsFirstTime = false;
-                    mCache.writeToCache(mRate, mDate, mAbrakadabra);
+                    mCache.writeToCache(mRate, mDate, mIsRequest);
                 }
             }
 
             @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
+            public void onFailure(Call<ExchangeCurrency> call, Throwable t) {
                 t.printStackTrace();
             }
         });
     }
 
     private void setRate() {
-        mAbrakadabra = mCache.isShouldGoToTheNetwork();
-        if (mAbrakadabra != null) {
-            if (mAbrakadabra) {
+        mIsRequest = mCache.isShouldGoToTheNetwork();
+        if (mIsRequest != null) {
+            if (mIsRequest) {
                 requestRate(true);
             } else {
                 if (mIsFirstTime) {
@@ -249,7 +253,7 @@ public class ExchangeActivity extends AppCompatActivity {
     private void setUpperClick(boolean upOrDown) {
         if (!mIsFirstTime) {
             if ((new Date()).getTime() - mDate.getTime() > FIVE_MINUTES) {
-                mAbrakadabra = true;
+                mIsRequest = true;
                 requestRate(upOrDown);
             }
         }
@@ -259,7 +263,7 @@ public class ExchangeActivity extends AppCompatActivity {
         switch (view.getId()) {
             case R.id.exchange_button:
                 if ((new Date()).getTime() - mDate.getTime() > FIVE_MINUTES) {
-                    mAbrakadabra = true;
+                    mIsRequest = true;
                     mIsShowDialog = true;
                     requestRate(true);
                 } else {
@@ -294,8 +298,8 @@ public class ExchangeActivity extends AppCompatActivity {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... voids) {
-                ApiResponse apiResponse = new ApiResponse(mUpperCurrency, mUpperValue, mLowerCurrency, mLowerValue);
-                mApiResponseDao.insert(apiResponse);
+                ExchangeCurrency apiResponse = new ExchangeCurrency(mUpperCurrency, mUpperValue, mLowerCurrency, mLowerValue);
+                mExchangeCurrencyDao.insert(apiResponse);
                 return null;
             }
 

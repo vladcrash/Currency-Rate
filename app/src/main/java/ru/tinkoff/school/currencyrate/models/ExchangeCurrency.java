@@ -8,24 +8,25 @@ import android.arch.persistence.room.PrimaryKey;
 import com.google.gson.annotations.SerializedName;
 
 
-@Entity(tableName = "api_response")
-public class ApiResponse {
+@Entity(tableName = "exchange_currency")
+public class ExchangeCurrency {
     @PrimaryKey(autoGenerate = true)
     private long id;
-    private String base;
+    @SerializedName("base")
+    private String from;
     private double value;
 
     @Embedded
     @SerializedName("rates")
     private Currency currency;
 
-    public ApiResponse() {
+    public ExchangeCurrency() {
 
     }
 
     @Ignore
-    public ApiResponse(String from, double valueFrom, String to, double valueTo) {
-        this.base = from;
+    public ExchangeCurrency(String from, double valueFrom, String to, double valueTo) {
+        this.from = from;
         this.value = valueFrom;
         currency = new Currency(valueTo, to);
 
@@ -39,12 +40,12 @@ public class ApiResponse {
         this.id = id;
     }
 
-    public String getBase() {
-        return base;
+    public String getFrom() {
+        return from;
     }
 
-    public void setBase(String base) {
-        this.base = base;
+    public void setFrom(String from) {
+        this.from = from;
     }
 
     public double getValue() {
@@ -65,7 +66,7 @@ public class ApiResponse {
 
     @Override
     public String toString() {
-        return value + " " + base + " = " +
-                currency.getValue() + " " + currency.getName();
+        return value + " " + from + " = " +
+                currency.getValue() + " " + currency.getTo();
     }
 }

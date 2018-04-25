@@ -36,7 +36,7 @@ import ru.tinkoff.school.currencyrate.App;
 import ru.tinkoff.school.currencyrate.R;
 import ru.tinkoff.school.currencyrate.adapters.CurrencyAnalysisAdapter;
 import ru.tinkoff.school.currencyrate.database.CurrencyDao;
-import ru.tinkoff.school.currencyrate.models.ApiResponse;
+import ru.tinkoff.school.currencyrate.models.ExchangeCurrency;
 import ru.tinkoff.school.currencyrate.models.Currency;
 
 
@@ -165,12 +165,12 @@ public class AnalysisFragment extends Fragment {
     }
 
     private void makeRequest(final String date) {
-        Call<ApiResponse> call = App.getFixerApi().getRateByDate(mBaseCurrencyName, mCurrencyForRequest, date);
+        Call<ExchangeCurrency> call = App.getFixerApi().getCurrencyRate(mBaseCurrencyName, mCurrencyForRequest, date);
         mXValues.add(date.substring(8) + date.substring(4, 7));
 
-        call.enqueue(new Callback<ApiResponse>() {
+        call.enqueue(new Callback<ExchangeCurrency>() {
             @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+            public void onResponse(Call<ExchangeCurrency> call, Response<ExchangeCurrency> response) {
                 if (response.isSuccessful()) {
                     double rate = response.body().getCurrency().getRate();
                     mYValues.add(new Entry((float) rate, mXIndex++));
@@ -181,7 +181,7 @@ public class AnalysisFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
+            public void onFailure(Call<ExchangeCurrency> call, Throwable t) {
 
             }
         });
@@ -213,7 +213,7 @@ public class AnalysisFragment extends Fragment {
         mAdapter.setOnItemClickListener(new CurrencyAnalysisAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, CurrencyAnalysisAdapter.CurrencyViewHolder holder) {
-                mCurrencyForRequest = holder.getCurrency().getName();
+                mCurrencyForRequest = holder.getCurrency().getTo();
 
                 if (mSelectedView == null) {
                     mSelectedView = view;

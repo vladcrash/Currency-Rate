@@ -47,7 +47,7 @@ public class CurrencyAdapter extends RecyclerView.Adapter<CurrencyAdapter.Curren
 
                     @Override
                     public boolean areContentsTheSame(Currency oldItem, Currency newItem) {
-                        return oldItem.getName().equals(newItem.getName());
+                        return oldItem.getTo().equals(newItem.getTo());
                     }
 
                     @Override
@@ -97,9 +97,9 @@ public class CurrencyAdapter extends RecyclerView.Adapter<CurrencyAdapter.Curren
     }
 
     public int getItemPositionByName(String name) {
-        int position = -1;
+        int position = 0;
         for (int i = 0; i < mCurrencies.size(); i++) {
-            if (mCurrencies.get(i).getName().equals(name)) {
+            if (mCurrencies.get(i).getTo().equals(name)) {
                 position = i;
             }
         }
@@ -151,7 +151,7 @@ public class CurrencyAdapter extends RecyclerView.Adapter<CurrencyAdapter.Curren
 
         public void bind(Currency currency) {
             mCurrency = currency;
-            mNameTextView.setText(currency.getName());
+            mNameTextView.setText(currency.getTo());
             mFavouriteCheckBox.setChecked(currency.isFavourite());
         }
 

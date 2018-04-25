@@ -56,7 +56,7 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.FilterView
 
         public void bind(Currency currencyHistory) {
             mCurrencyHistory = currencyHistory;
-            mName.setText(currencyHistory.getName());
+            mName.setText(currencyHistory.getTo());
             mFavouriteCheckBox.setChecked(currencyHistory.isFavourite());
         }
 

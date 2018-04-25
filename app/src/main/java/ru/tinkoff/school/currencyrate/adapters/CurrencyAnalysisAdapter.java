@@ -43,7 +43,7 @@ public class CurrencyAnalysisAdapter extends RecyclerView.Adapter<CurrencyAnalys
 
                     @Override
                     public boolean areContentsTheSame(Currency oldItem, Currency newItem) {
-                        return oldItem.getName().equals(newItem.getName());
+                        return oldItem.getTo().equals(newItem.getTo());
                     }
 
                     @Override
@@ -105,7 +105,7 @@ public class CurrencyAnalysisAdapter extends RecyclerView.Adapter<CurrencyAnalys
 
         public void onBind(Currency currency) {
             mCurrency = currency;
-            mCurrencyName.setText(currency.getName());
+            mCurrencyName.setText(currency.getTo());
         }
 
         @Override
